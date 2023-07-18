@@ -5,6 +5,14 @@
 
 /* global global, Office, self, window */
 
+import { Configuration, OpenAIApi } from "openai";
+
+const configuration = new Configuration({
+    organization: "brunner40s",
+    apiKey: "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",
+});
+const openai = new OpenAIApi(configuration);
+
 Office.onReady(() => {
   // If needed, Office.js is ready to be called
 });
@@ -41,3 +49,16 @@ const g = getGlobal() as any;
 
 // The add-in command functions need to be available in global scope
 g.action = action;
+
+
+async function queryGPT(input: string): Promise<void>{
+
+  const query = `The following message contains one or more events. \
+  Figure out the date, name, start time and end time of the events \
+  and return it in a JSON format. "${input}"`;
+
+  const completion = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [{"role": "assistant", "content": query}],
+  });
+};
