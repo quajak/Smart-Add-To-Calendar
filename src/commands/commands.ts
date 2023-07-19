@@ -13,6 +13,14 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+type gptResponse = {
+  eventName: string,
+  eventDate: string,
+  startTime: string,
+  endTime: string,
+  links?: string[],
+}
+
 Office.onReady(() => {
   // If needed, Office.js is ready to be called
 });
@@ -51,14 +59,18 @@ const g = getGlobal() as any;
 g.action = action;
 
 
-async function queryGPT(input: string): Promise<void>{
+async function queryGPT(input: string): Promise<gptResponse>{
 
   const query = `The following message contains one or more events. \
-  Figure out the date, name, start time and end time of the events \
+  Figure out the date(eventDate), name(eventName), start time(startTime) and end time(endTime) of the events \
   and return it in a JSON format. "${input}"`;
 
   const completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
     messages: [{"role": "assistant", "content": query}],
   });
+
+  const response  = JSON.parse(completion.data.choices[0].message.content);
+
+  return response;
 };
