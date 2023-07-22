@@ -8,18 +8,18 @@
 import { Configuration, OpenAIApi } from "openai";
 
 const configuration = new Configuration({
-    organization: "brunner40s",
-    apiKey: "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",
+  apiKey: "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",
 });
 const openai = new OpenAIApi(configuration);
 
 type gptResponse = {
-  eventName: string,
-  eventDate: string,
-  startTime: string,
-  endTime: string,
-  links?: string[],
-}
+  eventName: string;
+  eventDate: string;
+  startTime: string;
+  endTime: string;
+  location?: string;
+  meetingLinks?: string[];
+};
 
 Office.onReady(() => {
   // If needed, Office.js is ready to be called
@@ -32,11 +32,22 @@ Office.onReady(() => {
 function action(event: Office.AddinCommands.Event) {
   const open_message = Office.context.mailbox.item;
 
-  Office.context.mailbox.item.body.getAsync("text", {}, function callback(result) {
-    Office.context.mailbox.displayNewAppointmentForm({
-      subject: "Event: " + open_message.subject,
-      body: result.value,
-    } as Office.AppointmentForm);
+  open_message.body.getAsync("text", {}, async function callback(result) {
+    const events = await queryGPT("Subject: " + open_message.subject + " Body: " + result.value);
+    events.forEach((event) => {
+      const appointment = {
+        subject: event.eventName,
+        body: `${event.meetingLinks || ""} \n\n ${result.value}`,
+        start: new Date(event.eventDate + " " + event.startTime),
+      } as Office.AppointmentForm;
+      if (event.endTime) {
+        appointment.end = new Date(event.eventDate + " " + event.endTime);
+      }
+      if (event.location) {
+        appointment.location = event.location;
+      }
+      Office.context.mailbox.displayNewAppointmentForm(appointment);
+    });
   });
 
   // Be sure to indicate when the add-in command function is complete
@@ -58,18 +69,16 @@ const g = getGlobal() as any;
 // The add-in command functions need to be available in global scope
 g.action = action;
 
-
-async function queryGPT(input: string): Promise<gptResponse>{
-
+async function queryGPT(input: string): Promise<gptResponse[]> {
   const query = `The following message contains one or more events. \
-  Figure out the date(eventDate), name(eventName), start time(startTime) and end time(endTime) of the events \
-  and return it in a JSON format (put the dates in dd-mm-yyyy format and time in 24 hour format). If there are any links put them in an array of strings. "${input}"`;
+  Figure out the date(eventDate), name(eventName), start time(startTime), end time(endTime),optional location(location) and optional meeting links(meetingLinks) of the events \
+  and return it in a JSON format (put the dates in yyyy-mm-dd format and time in 24 hour format). "${input}"`;
 
   const completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
-    messages: [{"role": "assistant", "content": query}],
+    messages: [{ role: "assistant", content: query }],
   });
 
-  const response  = JSON.parse(completion.data.choices[0].message.content);
-  return response;
-};
+  const response = JSON.parse(completion.data.choices[0].message.content);
+  return response.events;
+}
