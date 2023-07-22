@@ -63,7 +63,7 @@ async function queryGPT(input: string): Promise<gptResponse>{
 
   const query = `The following message contains one or more events. \
   Figure out the date(eventDate), name(eventName), start time(startTime) and end time(endTime) of the events \
-  and return it in a JSON format. "${input}"`;
+  and return it in a JSON format (put the dates in dd-mm-yyyy format and time in 24 hour format). If there are any links put them in an array of strings. "${input}"`;
 
   const completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
@@ -71,6 +71,5 @@ async function queryGPT(input: string): Promise<gptResponse>{
   });
 
   const response  = JSON.parse(completion.data.choices[0].message.content);
-
   return response;
 };
