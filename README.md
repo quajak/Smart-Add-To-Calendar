@@ -1,4 +1,4 @@
-## Smart Add:
+## Smart Add
 
 Smart Add is an outlook extension, which on button press, will extract meetings and events mentioned in the email and prompt the user to add them to their calendar.  
 
