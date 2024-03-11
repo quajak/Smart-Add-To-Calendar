@@ -1,16 +1,5 @@
-Add to Calendar Add In:
+## Smart Add:
 
-Get current messsage using Office.mailbox.item
+Smart Add is an outlook extension, which on button press, will extract meetings and events mentioned in the email and prompt the user to add them to their calendar.  
 
-Query gpt3.5 to get info from email
-
-display the new appointment form 
-https://learn.microsoft.com/en-us/javascript/api/outlook/office.mailbox?view=outlook-js-1.13#outlook-office-mailbox-displaynewappointmentformasync-member(2)
-
-
-TODO: 
-Add LLM to command.ts 
-
-Links:
-For setup https://learn.microsoft.com/en-us/office/dev/add-ins/quickstarts/outlook-quickstart?tabs=yeomangenerator
-For debugging https://learn.microsoft.com/en-us/office/dev/add-ins/testing/debug-desktop-using-edge-chromium
+It is built using Typscript and uses the OpenAI interface to extract the information from the email. 
